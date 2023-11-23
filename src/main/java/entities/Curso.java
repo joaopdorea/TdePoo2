@@ -1,7 +1,5 @@
 
 package entities;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
 
@@ -31,7 +29,6 @@ public class Curso implements Serializable {
     private int cargaHoraria;
 
     @ManyToMany
-    @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinTable(name = "tb_aluno_curso",
             joinColumns = @JoinColumn(name = "aluno_id"),
             inverseJoinColumns = @JoinColumn(name = "curso_id"))
