@@ -35,6 +35,7 @@ public class JpaBootstrap {
                 System.out.println("Digite 4 para mostrar todos os alunos");
                 System.out.println("Digite 5 para adicionar um aluno a determinado curso");
                 System.out.println("Digite 6 para mostrar todos os alunos e seus respectivos cursos");
+                System.out.println("Digite 7 para mostrar todos os alunos de determinado curso");
 
 
                 System.out.println("Digite 0 para sair");
@@ -147,6 +148,21 @@ public class JpaBootstrap {
 
                         try {
                             mostraAlunosECurso(emf);
+                        }catch(Exception e){
+                            e.printStackTrace();
+                        }
+
+                        break;
+
+
+                    case 7:
+                        //Mostrando todos os alunos de determinado curso
+
+                        try {
+                            Scanner scan4 = new Scanner(System.in);
+                            System.out.println("Digite o nome do curso");
+                            String cursoEscolhido = scan4.next();
+                            mostraAlunosDeCurso(emf, cursoEscolhido);
                         }catch(Exception e){
                             e.printStackTrace();
                         }
@@ -353,6 +369,38 @@ public class JpaBootstrap {
             em.close();
         }
         return null;
+
+    }
+
+
+
+    public static void mostraAlunosDeCurso(EntityManagerFactory emf, String nomeCurso) {
+
+
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction transaction = em.getTransaction();
+
+        try {
+            transaction.begin();
+            Query query = em.createQuery("SELECT a FROM Aluno a JOIN a.cursos c WHERE c.nome = :nomeCurso");
+            query.setParameter("nomeCurso", nomeCurso);
+            List<Aluno> resultList = query.getResultList();
+
+
+
+            for(Aluno x: resultList){
+
+                System.out.print(x);
+
+            }
+
+            transaction.commit();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }finally {
+            em.close();
+        }
 
     }
 
