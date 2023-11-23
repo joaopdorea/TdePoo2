@@ -7,9 +7,11 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.Query;
+import java.io.BufferedOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Stream;
 
 public class JpaBootstrap {
 
@@ -27,6 +29,7 @@ public class JpaBootstrap {
 
             int option = 1;
 
+            //Loop com um menu de opções, que só é encerrado se o usuário aperta 0
             while (option != 0) {
                 System.out.println("Digite 1 para adicionar um aluno");
                 System.out.println("Digite 2 para adicionar um curso");
@@ -40,6 +43,8 @@ public class JpaBootstrap {
                 Scanner scan = new Scanner(System.in);
                 option = scan.nextInt();
                 switch (option) {
+
+                    //Inserindo aluno
                     case 1:
                         System.out.println("Digite o número da matrícula do aluno:");
                         String matricula = scan.next();
@@ -55,7 +60,7 @@ public class JpaBootstrap {
 
                         break;
 
-
+                    //Inserindo curso
                     case 2:
 
                         System.out.println("Digite o código do curso:");
@@ -75,6 +80,7 @@ public class JpaBootstrap {
                         break;
 
                     case 3:
+                        //Mostrando todos os cursos do banco de dados
 
                         try {
                             em.getTransaction().begin();
@@ -87,7 +93,7 @@ public class JpaBootstrap {
 
 
                     case 4:
-
+                        //Mostrando todos os alunos do banco de dados
                         try {
                             em.getTransaction().begin();
                         }catch(Exception e){
@@ -200,11 +206,19 @@ public class JpaBootstrap {
 
         try {
 
-            Query query = em.createQuery("select a from Aluno a");
+            Query query = em.createQuery("SELECT a FROM Aluno a JOIN a.cursos c");
             List<Aluno> resultList = query.getResultList();
 
+            Query query2 = em.createQuery("SELECT c.nome FROM Aluno a JOIN a.cursos c");
+            List<String> resultList2 = query2.getResultList();
+
+            int i = 0;
             for(Aluno x: resultList){
-                System.out.println(x);
+
+                System.out.print(x);
+                System.out.println(resultList2.get(i));
+                i = i+1;
+
             }
 
             em.getTransaction().commit();

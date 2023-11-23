@@ -35,7 +35,6 @@ public class Aluno implements Serializable {
     public Aluno(String matricula, String nome) {
         this.matricula = matricula;
         this.nome = nome;
-
     }
 
     public Aluno(){
@@ -66,7 +65,8 @@ public class Aluno implements Serializable {
     @Override
     public String toString() {
         return "Aluno{" +
-                "matricula='" + matricula + '\'' +
+                "id=" + id +
+                ", matricula='" + matricula + '\'' +
                 ", nome='" + nome + '\'' +
                 '}';
     }
