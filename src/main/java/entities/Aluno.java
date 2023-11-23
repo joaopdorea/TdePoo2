@@ -2,6 +2,9 @@ package entities;
 
 
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import javax.persistence.*;
 
 
@@ -29,6 +32,7 @@ public class Aluno implements Serializable {
 
 
     @ManyToMany(mappedBy = "alunos")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Set<Curso> cursos = new HashSet<Curso>();
 
 

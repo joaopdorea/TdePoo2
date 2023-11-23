@@ -3,10 +3,8 @@ package controller;
 import entities.Aluno;
 import entities.Curso;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
-import javax.persistence.Query;
+import javax.persistence.*;
+import javax.transaction.Transaction;
 import java.io.BufferedOutputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +34,7 @@ public class JpaBootstrap {
                 System.out.println("Digite 3 para mostrar todos os cursos");
                 System.out.println("Digite 4 para mostrar todos os alunos");
                 System.out.println("Digite 5 para adicionar um aluno a determinado curso");
+                System.out.println("Digite 6 para mostrar todos os alunos e seus respectivos cursos");
 
 
                 System.out.println("Digite 0 para sair");
@@ -55,7 +54,7 @@ public class JpaBootstrap {
 
                         Aluno aluno = new Aluno(matricula, nome);
 
-                        inserirAluno(em, aluno);
+                        inserirAluno(emf, aluno);
 
 
                         break;
@@ -74,7 +73,7 @@ public class JpaBootstrap {
 
                         Curso curso = new Curso(codigoCurso, nomeCurso, cargaHoraria);
 
-                        inserirCurso(em, curso);
+                        inserirCurso(emf, curso);
 
 
                         break;
@@ -83,31 +82,33 @@ public class JpaBootstrap {
                         //Mostrando todos os cursos do banco de dados
 
                         try {
-                            em.getTransaction().begin();
+                            mostraCursos(emf);
                         }catch(Exception e){
                             e.printStackTrace();
                         }
-                        mostraCursos(em);
+
 
                         break;
 
 
                     case 4:
                         //Mostrando todos os alunos do banco de dados
+
                         try {
-                            em.getTransaction().begin();
+                            mostraAlunos(emf);
                         }catch(Exception e){
                             e.printStackTrace();
                         }
-                        mostraAlunos(em);
+
 
                         break;
+
 
 
                     case 5:
 
                         try {
-                            em.getTransaction().begin();
+
 
                             String nomeDoCurso;
                             String matriculaAluno;
@@ -115,17 +116,18 @@ public class JpaBootstrap {
                             Scanner scan2 = new Scanner(System.in);
 
                             System.out.println("Escreva a matrícula do aluno que você deseja alocar");
-                            mostraAlunos(em);
+                            mostraAlunos(emf);
                             matriculaAluno = scan2.next();
 
-                            Aluno a1 = buscaAlunoPelaMatricula(em, matriculaAluno);
+                            Aluno a1 = buscaAlunoPelaMatricula(emf, matriculaAluno);
 
-                            System.out.println("Selecione o curso");
-                            mostraCursos(em);
+                            System.out.println("Selecione o nome do curso");
+                            mostraCursos(emf);
                             nomeDoCurso = scan2.next();
 
-                            Curso c1 = buscaCursoPeloNome(em, nomeDoCurso);
+                            Curso c1 = buscaCursoPeloNome(emf, nomeDoCurso);
 
+                            em.getTransaction().begin();
                             c1.getAlunos().add(a1);
                             em.persist(c1);
                             em.getTransaction().commit();
@@ -134,6 +136,22 @@ public class JpaBootstrap {
                             e.printStackTrace();
                         }
 
+                        break;
+
+
+
+
+
+                    case 6:
+                        //Mostrando todos os alunos e seus cursos
+
+                        try {
+                            mostraAlunosECurso(emf);
+                        }catch(Exception e){
+                            e.printStackTrace();
+                        }
+
+                        break;
 
                 }
 
@@ -151,40 +169,54 @@ public class JpaBootstrap {
         emf.close();
     }
 
-    public static void inserirAluno(EntityManager em, Aluno a1) {
+    public static void inserirAluno(EntityManagerFactory emf, Aluno a1) {
 
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction transaction = em.getTransaction();
         try {
-            em.getTransaction().begin();
+            transaction.begin();
             em.persist(a1);
             // Commit da transação. Isso confirmará as operações de persistência realizadas durante a transação.
-            em.getTransaction().commit();
+            transaction.commit();
 
         } catch (Exception e) {
             e.printStackTrace();
+        }finally{
+            em.close();
         }
 
     }
 
 
-    public static void inserirCurso(EntityManager em, Curso c1) {
+    public static void inserirCurso(EntityManagerFactory emf, Curso c1) {
+
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction transaction = em.getTransaction();
 
         try {
-            em.getTransaction().begin();
+            transaction.begin();
             em.persist(c1);
             // Commit da transação. Isso confirmará as operações de persistência realizadas durante a transação.
-            em.getTransaction().commit();
+            transaction.commit();
 
         } catch (Exception e) {
             e.printStackTrace();
+        }finally {
+            em.close();
         }
 
     }
 
 
-    public static void mostraCursos(EntityManager em) {
+    public static void mostraCursos(EntityManagerFactory emf) {
+
+
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction transaction = em.getTransaction();
 
         try {
 
+            transaction.begin();
 
             Query query = em.createQuery("select c from Curso c");
             List<Curso> resultList = query.getResultList();
@@ -193,19 +225,25 @@ public class JpaBootstrap {
                 System.out.println(x);
             }
 
-            em.getTransaction().commit();
+            transaction.commit();
 
         } catch (Exception e) {
             e.printStackTrace();
+        }finally {
+            em.close();
         }
 
     }
 
 
-    public static void mostraAlunos(EntityManager em) {
+    public static void mostraAlunosECurso(EntityManagerFactory emf) {
+
+
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction transaction = em.getTransaction();
 
         try {
-
+            transaction.begin();
             Query query = em.createQuery("SELECT a FROM Aluno a JOIN a.cursos c");
             List<Aluno> resultList = query.getResultList();
 
@@ -216,24 +254,60 @@ public class JpaBootstrap {
             for(Aluno x: resultList){
 
                 System.out.print(x);
-                System.out.println(resultList2.get(i));
+                System.out.println(" {" + resultList2.get(i) + "}");
                 i = i+1;
 
             }
 
-            em.getTransaction().commit();
+            transaction.commit();
 
         } catch (Exception e) {
             e.printStackTrace();
+        }finally {
+            em.close();
         }
 
     }
 
 
-    public static Aluno buscaAlunoPelaMatricula(EntityManager em, String matricula) {
+    public static void mostraAlunos(EntityManagerFactory emf) {
+
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction transaction = em.getTransaction();
 
         try {
-            em.getTransaction().begin();
+
+            transaction.begin();
+
+            Query query = em.createQuery("SELECT a FROM Aluno a");
+            List<Aluno> resultList = query.getResultList();
+
+            for(Aluno x: resultList){
+
+                System.out.println(x);
+
+
+
+            }
+
+            transaction.commit();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally{
+            em.close();
+        }
+
+    }
+
+
+    public static Aluno buscaAlunoPelaMatricula(EntityManagerFactory emf, String matricula) {
+
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction transaction = em.getTransaction();
+
+        try {
+            transaction.begin();
 
             Query query = em.createQuery("SELECT a FROM Aluno a WHERE a.matricula = :matricula");
             query.setParameter("matricula", matricula);
@@ -248,16 +322,19 @@ public class JpaBootstrap {
 
         } catch (Exception e) {
             e.printStackTrace();
+        }finally {
+            em.close();
         }
         return null;
 
     }
 
 
-    public static Curso buscaCursoPeloNome(EntityManager em, String nomeCurso) {
-
+    public static Curso buscaCursoPeloNome(EntityManagerFactory emf, String nomeCurso) {
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction transaction = em.getTransaction();
         try {
-            em.getTransaction().begin();
+            transaction.begin();
 
             Query query = em.createQuery("SELECT c FROM Curso c WHERE c.nome = :nomeCurso");
             query.setParameter("nomeCurso", nomeCurso);
@@ -272,12 +349,12 @@ public class JpaBootstrap {
 
         } catch (Exception e) {
             e.printStackTrace();
+        }finally {
+            em.close();
         }
         return null;
 
     }
-
-
 
 
 
