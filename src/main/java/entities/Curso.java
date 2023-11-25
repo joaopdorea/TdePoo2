@@ -70,7 +70,7 @@ public class Curso implements Serializable {
     }
 
     public Set<Aluno> getAlunos() {
-        return alunos;
+        return this.alunos;
     }
 
     @Override
